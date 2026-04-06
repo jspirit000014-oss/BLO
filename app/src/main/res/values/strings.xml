@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Bloqueo</string>
+    <string name="accessibility_service_description">Necesario para detectar qué app estás usando y mostrar la pantalla de bloqueo encima cuando abres una app bloqueada (como Stay Focused). La app solo detecta cambios de ventana, no accede a tu contenido.</string>
+</resources>
