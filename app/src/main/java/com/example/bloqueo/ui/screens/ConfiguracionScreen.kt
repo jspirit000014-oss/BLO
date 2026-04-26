@@ -21,6 +21,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.bloqueo.data.AppRepository
 import com.example.bloqueo.ui.theme.*
 import com.example.bloqueo.util.PermissionHelper
+import androidx.core.content.FileProvider
+import com.google.gson.Gson
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +44,7 @@ fun ConfiguracionScreen(
     var disableAdminMessage by remember { mutableStateOf<String?>(null) }
     var showAdjustImageDialog by remember { mutableStateOf(false) }
     var showSetPasswordPornoDialog by remember { mutableStateOf(false) }
+    var showImportExportMsg by remember { mutableStateOf<String?>(null) }
     var newPasswordPorno by remember { mutableStateOf("") }
     var newPasswordPornoConfirm by remember { mutableStateOf("") }
 
@@ -75,6 +79,24 @@ fun ConfiguracionScreen(
         pendingAction = null
         showPasswordCheck = false
         passwordToCheck = ""
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.readText()
+                if (json != null) {
+                    val imported = Gson().fromJson(json, com.example.bloqueo.data.AppData::class.java)
+                    repository.saveAppData(imported)
+                    refresh()
+                    showImportExportMsg = "Importación exitosa ✓"
+                }
+            } catch (e: Exception) {
+                showImportExportMsg = "Error al importar: ${e.message}"
+            }
+        }
     }
 
     val isStrictMode = data.configuracion.modoActual == "estricto" && data.configuracion.modoEstricto == true
@@ -222,6 +244,65 @@ fun ConfiguracionScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
+            Text("IMPORTAR / EXPORTAR", style = MaterialTheme.typography.labelLarge, color = AccentTeal)
+            Spacer(Modifier.height(8.dp))
+            if (showImportExportMsg != null) {
+                Text(showImportExportMsg!!, color = AccentTeal, style = MaterialTheme.typography.bodySmall)
+                Spacer(Modifier.height(4.dp))
+            }
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("Exportar configuración", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                    Text(
+                        "Guarda todas tus apps bloqueadas, perfiles, horarios y configuración en un archivo .json.",
+                        style = MaterialTheme.typography.bodySmall, color = TextSecondary
+                    )
+                    Button(
+                        onClick = {
+                            try {
+                                val json = Gson().toJson(repository.getAppData())
+                                val file = File(context.cacheDir, "stayfocused_backup.json")
+                                file.writeText(json)
+                                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+                                context.startActivity(android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    type = "application/json"
+                                    putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                })
+                                showImportExportMsg = "Exportando..."
+                            } catch (e: Exception) {
+                                showImportExportMsg = "Error al exportar: ${e.message}"
+                            }
+                        },
+                        modifier = Modifier.padding(top = 8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AccentTeal)
+                    ) { Text("Exportar") }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(Modifier.padding(12.dp)) {
+                    Text("Importar configuración", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                    Text(
+                        "Restaura todo desde un archivo .json exportado anteriormente.",
+                        style = MaterialTheme.typography.bodySmall, color = TextSecondary
+                    )
+                    Button(
+                        onClick = { importLauncher.launch(arrayOf("application/json", "text/*")) },
+                        modifier = Modifier.padding(top = 8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = AccentTeal)
+                    ) { Text("Importar") }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
             Text("GENERAL", style = MaterialTheme.typography.labelLarge, color = AccentTeal)
             Spacer(Modifier.height(8.dp))
             SwitchRow("Stay Focused activo (bloqueo de apps)", data.configuracion.stayFocusedActivo) { v ->
