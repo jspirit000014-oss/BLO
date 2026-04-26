@@ -799,7 +799,6 @@ fun ConfiguracionScreen(
             containerColor = CardBackground
         )
     }
-}
 
 
     if (showSetPasswordPornoDialog) {
@@ -857,6 +856,7 @@ fun ConfiguracionScreen(
             containerColor = CardBackground
         )
     }
+}
 @Composable
 private fun PermissionCard(title: String, description: String, granted: Boolean, onGrant: () -> Unit) {
     Card(
@@ -911,7 +911,12 @@ private fun NivelEstrictitudPornoSection(
     nivelActual: String,
     onActivarBloqueo: () -> Unit,
     onActivarEstricto: () -> Unit,
-    onDesactivar: () -> Unit
+    onDesactivar: () -> Unit,
+    appData: AppData,
+    repository: AppRepository,
+    browsersInstalados: List<Pair<String, String>>,
+    nuevoDominioPorno: String,
+    onNuevoDominioPornoChange: (String) -> Unit
 ) {
     Text(
         "NIVEL DE ESTRICTITUD (CONTENIDO)",
@@ -1012,7 +1017,6 @@ private fun NivelEstrictitudPornoSection(
                     .clickable {
                         if (bloqueado) repository.quitarPornoBrowser(packageName)
                         else repository.agregarPornoBrowser(packageName)
-                        appData = repository.loadAppData()
                     }
                     .padding(vertical = 4.dp)
             ) {
@@ -1021,7 +1025,6 @@ private fun NivelEstrictitudPornoSection(
                     onCheckedChange = { checked ->
                         if (checked) repository.agregarPornoBrowser(packageName)
                         else repository.quitarPornoBrowser(packageName)
-                        appData = repository.loadAppData()
                     }
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1042,7 +1045,7 @@ private fun NivelEstrictitudPornoSection(
     ) {
         OutlinedTextField(
             value = nuevoDominioPorno,
-            onValueChange = { nuevoDominioPorno = it },
+            onValueChange = { onNuevoDominioPornoChange(it) },
             placeholder = { Text("ej: ejemplo.com") },
             singleLine = true,
             modifier = Modifier.weight(1f)
@@ -1054,7 +1057,6 @@ private fun NivelEstrictitudPornoSection(
                 if (dominio.isNotEmpty()) {
                     repository.agregarPornoDominio(dominio)
                     nuevoDominioPorno = ""
-                    appData = repository.loadAppData()
                 }
             }
         ) { Text("Agregar") }
@@ -1075,7 +1077,6 @@ private fun NivelEstrictitudPornoSection(
                 Text(text = dominio, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 IconButton(onClick = {
                     repository.quitarPornoDominio(dominio)
-                    appData = repository.loadAppData()
                 }) {
                     Icon(imageVector = Icons.Default.Delete, contentDescription = "Quitar", tint = MaterialTheme.colorScheme.error)
                 }

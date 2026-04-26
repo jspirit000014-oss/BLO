@@ -677,7 +677,7 @@ class AppBlockerService : AccessibilityService() {
 
     // Acción para expulsar al usuario al menú principal
     private fun handlePornoBlocking(event: AccessibilityEvent) {
-        val config = repository.loadAppData().configuracion
+        val config = repository.getAppData().configuracion
         if (config.nivelEstrictitudPorno == "normal") return
         val packageName = event.packageName?.toString() ?: return
         if (!config.pornoBrowsersBloqueados.contains(packageName)) return
