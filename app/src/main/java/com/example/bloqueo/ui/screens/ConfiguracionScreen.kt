@@ -1091,6 +1091,4 @@ private fun NivelEstrictitudPornoSection(
             }
         }
     }
-    }
-    Spacer(Modifier.height(16.dp))
 }
