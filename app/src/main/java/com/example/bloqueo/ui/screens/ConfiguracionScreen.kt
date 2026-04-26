@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.bloqueo.data.AppRepository
 import com.example.bloqueo.data.AppData
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import com.example.bloqueo.ui.theme.*
 import com.example.bloqueo.util.PermissionHelper
 import androidx.core.content.FileProvider
@@ -956,7 +956,7 @@ private fun NivelEstrictitudPornoSection(
                     ) { Text("Activar") }
                 }
             }
-            HorizontalDivider(color = BackgroundDark.copy(alpha = 0.5f))
+            Divider(color = BackgroundDark.copy(alpha = 0.5f))
             Spacer(Modifier.height(12.dp))
             Column(Modifier.padding(bottom = 12.dp)) {
                 if (nivelActual == "bloqueo") {
@@ -977,7 +977,7 @@ private fun NivelEstrictitudPornoSection(
                     ) { Text("Activar") }
                 }
             }
-            HorizontalDivider(color = BackgroundDark.copy(alpha = 0.5f))
+            Divider(color = BackgroundDark.copy(alpha = 0.5f))
             Spacer(Modifier.height(12.dp))
             Column {
                 if (nivelActual == "estricto") {
