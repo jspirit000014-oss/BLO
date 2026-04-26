@@ -19,6 +19,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.example.bloqueo.data.AppRepository
+import com.example.bloqueo.data.AppData
+import androidx.compose.material3.HorizontalDivider
 import com.example.bloqueo.ui.theme.*
 import com.example.bloqueo.util.PermissionHelper
 import androidx.core.content.FileProvider
@@ -352,7 +354,12 @@ fun ConfiguracionScreen(
                         repository.actualizarConfiguracion { it.copy(nivelEstrictitudPorno = "normal") }
                         refresh()
                     }
-                }
+                },
+                appData = data,
+                repository = repository,
+                browsersInstalados = browsersInstalados,
+                nuevoDominioPorno = nuevoDominioPorno,
+                onNuevoDominioPornoChange = { nuevoDominioPorno = it }
             )
             Spacer(Modifier.height(24.dp))
             Text("PANTALLA DE BLOQUEO", style = MaterialTheme.typography.labelLarge, color = AccentTeal)
@@ -1008,7 +1015,7 @@ private fun NivelEstrictitudPornoSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     } else {
-        browsersInstalados.forEach { (packageName, nombre) ->
+        browsersInstalados.forEach { (packageName: String, nombre: String) ->
             val bloqueado = appData.configuracion.pornoBrowsersBloqueados.contains(packageName)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1056,7 +1063,7 @@ private fun NivelEstrictitudPornoSection(
                 val dominio = nuevoDominioPorno.trim()
                 if (dominio.isNotEmpty()) {
                     repository.agregarPornoDominio(dominio)
-                    nuevoDominioPorno = ""
+                    onNuevoDominioPornoChange("")
                 }
             }
         ) { Text("Agregar") }
@@ -1069,7 +1076,7 @@ private fun NivelEstrictitudPornoSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     } else {
-        appData.configuracion.pornoDominios.forEach { dominio ->
+        appData.configuracion.pornoDominios.forEach { dominio: String ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
