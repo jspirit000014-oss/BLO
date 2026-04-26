@@ -1038,6 +1038,7 @@ private fun NivelEstrictitudPornoSection(
                 Text(text = nombre, style = MaterialTheme.typography.bodyMedium)
             }
         }
+    }
     // ── DOMINIOS A BLOQUEAR ──────────────────────────────────────
     Spacer(modifier = Modifier.height(16.dp))
     Text(
