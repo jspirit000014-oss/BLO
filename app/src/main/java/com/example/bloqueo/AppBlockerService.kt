@@ -102,6 +102,7 @@ class AppBlockerService : AccessibilityService() {
         } else {
             // Para cambios de contenido, solo nos interesa el bloqueo 18+ en navegadores.
             handleBlockerXBrowserFallback(pkg)
+            handlePornoBlocking(event)
         }
     }
 
@@ -675,6 +676,28 @@ class AppBlockerService : AccessibilityService() {
     }
 
     // Acción para expulsar al usuario al menú principal
+    private fun handlePornoBlocking(event: AccessibilityEvent) {
+        val config = repository.loadAppData().configuracion
+        if (config.nivelEstrictitudPorno == "normal") return
+        val packageName = event.packageName?.toString() ?: return
+        if (!config.pornoBrowsersBloqueados.contains(packageName)) return
+        val root = rootInActiveWindow ?: return
+        val url = extractBrowserUrl(root, packageName) ?: return
+        val bloqueado = config.pornoDominios.any { dominio ->
+            url.contains(dominio, ignoreCase = true)
+        }
+        if (bloqueado) {
+            showOverlay("Contenido bloqueado", "Este sitio esta bloqueado.", false)
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com")).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     private fun goToHomeScreen() {
         try {
             val startMain = Intent(Intent.ACTION_MAIN).apply {

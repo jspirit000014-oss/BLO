@@ -345,6 +345,37 @@ class AppRepository(context: Context) {
         ))
     }
 
+    fun agregarPornoBrowser(packageName: String) {
+        val data = getAppData()
+        if (packageName in data.configuracion.pornoBrowsersBloqueados) return
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            pornoBrowsersBloqueados = data.configuracion.pornoBrowsersBloqueados + packageName
+        )))
+    }
+
+    fun quitarPornoBrowser(packageName: String) {
+        val data = getAppData()
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            pornoBrowsersBloqueados = data.configuracion.pornoBrowsersBloqueados - packageName
+        )))
+    }
+
+    fun agregarPornoDominio(dominio: String) {
+        val data = getAppData()
+        val d = dominio.trim().lowercase()
+        if (d.isBlank() || d in data.configuracion.pornoDominios) return
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            pornoDominios = data.configuracion.pornoDominios + d
+        )))
+    }
+
+    fun quitarPornoDominio(dominio: String) {
+        val data = getAppData()
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            pornoDominios = data.configuracion.pornoDominios - dominio
+        )))
+    }
+
     companion object {
         private const val KEY_APP_DATA = "app_data"
     }
