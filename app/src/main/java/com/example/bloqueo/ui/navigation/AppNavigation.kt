@@ -96,7 +96,11 @@ fun AppNavigation(
             )
         }
         composable(Screen.BlockerX.route) {
-            BlockerXApp()
+            ContenidoAdultoScreen(
+                repository = repository,
+                context = context,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.PerfilDetail.route) { backStackEntry ->
             val profileId = backStackEntry.arguments?.getString("profileId") ?: ""
