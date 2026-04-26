@@ -89,5 +89,7 @@ data class Configuracion(
     /** Minutos para expiración (si método = expiracion) */
     val estrictoExpiracionMinutos: Int? = 60,
     /** Token secreto codificado en el QR; al escanearlo se desactiva el modo estricto. */
-    val estrictoQrToken: String? = null
+    val estrictoQrToken: String? = null,
+    val nivelEstrictitudPorno: String = "normal",
+    val passwordBloqueoPorno: String = ""
 )

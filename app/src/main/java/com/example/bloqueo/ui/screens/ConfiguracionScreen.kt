@@ -40,6 +40,9 @@ fun ConfiguracionScreen(
     var passwordToDisableAdmin by remember { mutableStateOf("") }
     var disableAdminMessage by remember { mutableStateOf<String?>(null) }
     var showAdjustImageDialog by remember { mutableStateOf(false) }
+    var showSetPasswordPornoDialog by remember { mutableStateOf(false) }
+    var newPasswordPorno by remember { mutableStateOf("") }
+    var newPasswordPornoConfirm by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { data = repository.getAppData() }
 
@@ -231,6 +234,24 @@ fun ConfiguracionScreen(
                     repository.actualizarConfiguracion { it.copy(rotacionPantalla = v) }
                 }
             }
+            NivelEstrictitudPornoSection(
+                nivelActual = data.configuracion.nivelEstrictitudPorno,
+                onActivarBloqueo = {
+                    requirePasswordThen { showSetPasswordPornoDialog = true }
+                },
+                onActivarEstricto = {
+                    requirePasswordThen {
+                        repository.actualizarConfiguracion { it.copy(nivelEstrictitudPorno = "estricto") }
+                        refresh()
+                    }
+                },
+                onDesactivar = {
+                    requirePasswordThen {
+                        repository.actualizarConfiguracion { it.copy(nivelEstrictitudPorno = "normal") }
+                        refresh()
+                    }
+                }
+            )
             Spacer(Modifier.height(24.dp))
             Text("PANTALLA DE BLOQUEO", style = MaterialTheme.typography.labelLarge, color = AccentTeal)
             Spacer(Modifier.height(8.dp))
@@ -678,6 +699,62 @@ fun ConfiguracionScreen(
     }
 }
 
+
+    if (showSetPasswordPornoDialog) {
+        AlertDialog(
+            onDismissRequest = { showSetPasswordPornoDialog = false; newPasswordPorno = ""; newPasswordPornoConfirm = "" },
+            title = { Text("Contraseña bloqueo de contenido", color = TextPrimary) },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = newPasswordPorno,
+                        onValueChange = { newPasswordPorno = it },
+                        label = { Text("Nueva contraseña") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            focusedBorderColor = AccentTeal
+                        )
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = newPasswordPornoConfirm,
+                        onValueChange = { newPasswordPornoConfirm = it },
+                        label = { Text("Repetir contraseña") },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary,
+                            focusedBorderColor = AccentTeal
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (newPasswordPorno.isNotBlank() && newPasswordPorno == newPasswordPornoConfirm) {
+                        repository.actualizarConfiguracion {
+                            it.copy(nivelEstrictitudPorno = "bloqueo", passwordBloqueoPorno = newPasswordPorno)
+                        }
+                        data = repository.getAppData()
+                        showSetPasswordPornoDialog = false
+                        newPasswordPorno = ""
+                        newPasswordPornoConfirm = ""
+                        refresh()
+                    }
+                }) { Text("Guardar", color = AccentTeal) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showSetPasswordPornoDialog = false
+                    newPasswordPorno = ""
+                    newPasswordPornoConfirm = ""
+                }) { Text("Cancelar", color = TextSecondary) }
+            },
+            containerColor = CardBackground
+        )
+    }
 @Composable
 private fun PermissionCard(title: String, description: String, granted: Boolean, onGrant: () -> Unit) {
     Card(
@@ -724,4 +801,90 @@ private fun SwitchRow(text: String, checked: Boolean, onToggle: (Boolean) -> Uni
             )
         }
     }
+}
+
+
+@Composable
+private fun NivelEstrictitudPornoSection(
+    nivelActual: String,
+    onActivarBloqueo: () -> Unit,
+    onActivarEstricto: () -> Unit,
+    onDesactivar: () -> Unit
+) {
+    Text(
+        "NIVEL DE ESTRICTITUD (CONTENIDO)",
+        style = MaterialTheme.typography.labelLarge,
+        color = AccentTeal
+    )
+    Spacer(Modifier.height(8.dp))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = CardBackground),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Column(Modifier.padding(bottom = 12.dp)) {
+                if (nivelActual == "normal") {
+                    Text("Activo", style = MaterialTheme.typography.labelSmall, color = AccentTeal)
+                }
+                Text("Modo normal", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                Text(
+                    "Puedes cambiar la configuración libremente.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                if (nivelActual != "normal") {
+                    Spacer(Modifier.height(6.dp))
+                    Button(
+                        onClick = onDesactivar,
+                        colors = ButtonDefaults.buttonColors(containerColor = PurpleButton),
+                        shape = RoundedCornerShape(50)
+                    ) { Text("Activar") }
+                }
+            }
+            HorizontalDivider(color = BackgroundDark.copy(alpha = 0.5f))
+            Spacer(Modifier.height(12.dp))
+            Column(Modifier.padding(bottom = 12.dp)) {
+                if (nivelActual == "bloqueo") {
+                    Text("Activo", style = MaterialTheme.typography.labelSmall, color = AccentTeal)
+                }
+                Text("Modo de bloqueo", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                Text(
+                    "Contraseña para bloquear la configuración.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                if (nivelActual != "bloqueo") {
+                    Spacer(Modifier.height(6.dp))
+                    Button(
+                        onClick = onActivarBloqueo,
+                        colors = ButtonDefaults.buttonColors(containerColor = PurpleButton),
+                        shape = RoundedCornerShape(50)
+                    ) { Text("Activar") }
+                }
+            }
+            HorizontalDivider(color = BackgroundDark.copy(alpha = 0.5f))
+            Spacer(Modifier.height(12.dp))
+            Column {
+                if (nivelActual == "estricto") {
+                    Text("Activo", style = MaterialTheme.typography.labelSmall, color = AccentTeal)
+                }
+                Text("Modo estricto", style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                Text(
+                    "Evita cambios y desinstalación.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+                if (nivelActual != "estricto") {
+                    Spacer(Modifier.height(6.dp))
+                    Button(
+                        onClick = onActivarEstricto,
+                        colors = ButtonDefaults.buttonColors(containerColor = PurpleButton),
+                        shape = RoundedCornerShape(50)
+                    ) { Text("Activar") }
+                }
+            }
+        }
+    }
+    Spacer(Modifier.height(16.dp))
 }
