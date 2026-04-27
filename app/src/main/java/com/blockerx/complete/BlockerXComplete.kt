@@ -1251,7 +1251,7 @@ fun ConfigScreen(
     onBack: () -> Unit
 ) {
     var activeTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Dominios", "Keywords", "Whitelist", "Probar", "Seguridad")
+    val tabs = listOf("Dominios", "Keywords", "Whitelist", "Probar", "Seguridad", "Nivel 18+")
 
     Column(
         modifier = Modifier
@@ -1300,6 +1300,7 @@ fun ConfigScreen(
                 2 -> WhitelistTab(prefs, viewModel)
                 3 -> TestTab(viewModel)
                 4 -> SecurityTab(prefs, viewModel)
+                5 -> NivelAdultoTab()
             }
         }
     }
@@ -1805,3 +1806,111 @@ fun PinDialog(
     )
 }
 
+
+@Composable
+fun NivelAdultoTab() {
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("bloqueo_prefs", android.content.Context.MODE_PRIVATE)
+    var nivel by remember { mutableStateOf(prefs.getString("nivel_estrictitud_porno", "normal") ?: "normal") }
+    var showDialog by remember { mutableStateOf(false) }
+    var inputPass by remember { mutableStateOf("") }
+    var inputPassConfirm by remember { mutableStateOf("") }
+    var passError by remember { mutableStateOf("") }
+
+    fun guardarNivel(n: String, pass: String = "") {
+        prefs.edit().putString("nivel_estrictitud_porno", n).apply()
+        if (pass.isNotEmpty()) prefs.edit().putString("password_bloqueo_porno", pass).apply()
+        nivel = n
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false; inputPass = ""; inputPassConfirm = ""; passError = "" },
+            title = { Text("Establecer contrasena") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Esta contrasena se pedira para desactivar el bloqueo.")
+                    OutlinedTextField(value = inputPass, onValueChange = { inputPass = it; passError = "" },
+                        label = { Text("Contrasena") },
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        singleLine = true)
+                    OutlinedTextField(value = inputPassConfirm, onValueChange = { inputPassConfirm = it; passError = "" },
+                        label = { Text("Confirmar") },
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        singleLine = true)
+                    if (passError.isNotEmpty()) Text(passError, color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    when {
+                        inputPass.length < 4 -> passError = "Minimo 4 caracteres."
+                        inputPass != inputPassConfirm -> passError = "No coinciden."
+                        else -> { guardarNivel("bloqueo", inputPass); showDialog = false; inputPass = ""; inputPassConfirm = ""; passError = "" }
+                    }
+                }) { Text("Confirmar") }
+            },
+            dismissButton = { TextButton(onClick = { showDialog = false; inputPass = ""; inputPassConfirm = ""; passError = "" }) { Text("Cancelar") } }
+        )
+    }
+
+    LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            Text("NIVEL DE RESTRICCION DE CONTENIDO ADULTO",
+                style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary)
+        }
+        item {
+            OutlinedCard(modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = if (nivel == "normal") MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surface)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Modo normal", fontWeight = FontWeight.SemiBold)
+                        Text("Sin restricciones extra.", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (nivel != "normal") TextButton(onClick = { guardarNivel("normal") }) { Text("Activar") }
+                    else Text("Activo", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        item {
+            OutlinedCard(modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = if (nivel == "bloqueo") MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surface)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Modo bloqueo", fontWeight = FontWeight.SemiBold)
+                        Text("Requiere contrasena para desactivar.", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (nivel != "bloqueo") TextButton(onClick = { showDialog = true }) { Text("Activar") }
+                    else Text("Activo", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        item {
+            OutlinedCard(modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.outlinedCardColors(
+                    containerColor = if (nivel == "estricto") MaterialTheme.colorScheme.errorContainer
+                    else MaterialTheme.colorScheme.surface)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Modo estricto", fontWeight = FontWeight.SemiBold)
+                        Text("Evita cambios. Sin forma de revertir.", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (nivel != "estricto") TextButton(onClick = { guardarNivel("estricto") }) { Text("Activar") }
+                    else Text("Activo", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
