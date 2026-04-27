@@ -980,6 +980,11 @@ fun MainScreen(
                     .background(DarkBlue)
             ) {
 
+                // ── NIVEL ESTRICTITUD PORNO ──
+                NivelAdultoInline()
+
+                Divider(color = Color.White.copy(alpha = 0.08f), thickness = 0.5.dp)
+
                 // ── ITEM 1: Aplicaciones Bloqueadas ──
                 QuickSettingItemCount(
                     icon = "📵",
@@ -1030,11 +1035,6 @@ fun MainScreen(
                     onConfigure = onNavigateConfig,
                     isMainToggle = true
                 )
-
-                Divider(color = Color.White.copy(alpha = 0.08f), thickness = 0.5.dp)
-
-                // ── NIVEL ESTRICTITUD PORNO ──
-                NivelAdultoInline(prefs = prefs)
 
                 Divider(color = Color.White.copy(alpha = 0.08f), thickness = 0.5.dp)
 
@@ -1921,7 +1921,7 @@ fun NivelAdultoTab() {
 }
 
 @Composable
-fun NivelAdultoInline(prefs: BlockerPreferences) {
+fun NivelAdultoInline() {
     val context = LocalContext.current
     val sp = context.getSharedPreferences("bloqueo_prefs", android.content.Context.MODE_PRIVATE)
     var nivel by remember { mutableStateOf(sp.getString("nivel_estrictitud_porno", "normal") ?: "normal") }
@@ -1929,13 +1929,11 @@ fun NivelAdultoInline(prefs: BlockerPreferences) {
     var inputPass by remember { mutableStateOf("") }
     var inputPassConfirm by remember { mutableStateOf("") }
     var passError by remember { mutableStateOf("") }
-
     fun guardar(n: String, pass: String = "") {
         sp.edit().putString("nivel_estrictitud_porno", n).apply()
         if (pass.isNotEmpty()) sp.edit().putString("password_bloqueo_porno", pass).apply()
         nivel = n
     }
-
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false; inputPass = ""; inputPassConfirm = ""; passError = "" },
@@ -1945,14 +1943,11 @@ fun NivelAdultoInline(prefs: BlockerPreferences) {
                     Text("Se pedira para desactivar el bloqueo.")
                     OutlinedTextField(value = inputPass, onValueChange = { inputPass = it; passError = "" },
                         label = { Text("Contrasena") },
-                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        singleLine = true)
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), singleLine = true)
                     OutlinedTextField(value = inputPassConfirm, onValueChange = { inputPassConfirm = it; passError = "" },
                         label = { Text("Confirmar") },
-                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(),
-                        singleLine = true)
-                    if (passError.isNotEmpty()) Text(passError, color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall)
+                        visualTransformation = androidx.compose.ui.text.input.PasswordVisualTransformation(), singleLine = true)
+                    if (passError.isNotEmpty()) Text(passError, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             },
             confirmButton = {
@@ -1967,9 +1962,7 @@ fun NivelAdultoInline(prefs: BlockerPreferences) {
             dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancelar") } }
         )
     }
-
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text("Nivel de restriccion 18+", color = Color.White.copy(alpha = 0.7f), fontSize = 12.sp)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("normal" to "Normal", "bloqueo" to "Bloqueo", "estricto" to "Estricto").forEach { (key, label) ->
@@ -1979,8 +1972,7 @@ fun NivelAdultoInline(prefs: BlockerPreferences) {
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = if (selected) Color(0xFF1565C0) else Color.Transparent,
-                        contentColor = Color.White
-                    )
+                        contentColor = Color.White)
                 ) { Text(label, fontSize = 11.sp) }
             }
         }
