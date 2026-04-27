@@ -376,6 +376,21 @@ class AppRepository(context: Context) {
         )))
     }
 
+
+    fun setNivelEstrictitudPorno(nivel: String) {
+        val data = getAppData()
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            nivelEstrictitudPorno = nivel
+        )))
+    }
+
+    fun setPasswordBloqueoPorno(password: String) {
+        val data = getAppData()
+        saveAppData(data.copy(configuracion = data.configuracion.copy(
+            passwordBloqueoPorno = password
+        )))
+    }
+
     companion object {
         private const val KEY_APP_DATA = "app_data"
     }
