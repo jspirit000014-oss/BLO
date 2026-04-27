@@ -97,9 +97,7 @@ fun AppNavigation(
         }
         composable(Screen.BlockerX.route) {
             ContenidoAdultoScreen(
-                repository = repository,
-                context = context,
-                onBack = { navController.popBackStack() }
+                repository = repository
             )
         }
         composable(Screen.PerfilDetail.route) { backStackEntry ->

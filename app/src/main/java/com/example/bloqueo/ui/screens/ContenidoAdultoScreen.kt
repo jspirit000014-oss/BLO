@@ -251,7 +251,7 @@ fun ContenidoAdultoScreen(repository: AppRepository) {
                                         tint = MaterialTheme.colorScheme.error)
                                 }
                             }
-                            HorizontalDivider()
+                            Divider()
                         }
                     }
                 }
